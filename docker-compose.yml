@@ -3,8 +3,6 @@ services:
   app:
     image: kondosoft/beanstalk-yum:staging
     restart: on-failure
-    volumes:
-      - ./app:/app
     expose:
       - 8000
   nginx-proxy:
