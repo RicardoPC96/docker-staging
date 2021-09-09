@@ -1,0 +1,47 @@
+version: '3'
+services:
+  app:
+    image: kondosoft/beanstalk-yum:staging
+    restart: on-failure
+    volumes:
+      - ./app:/app
+    expose:
+      - 8000
+  nginx-proxy:
+    image: kondosoft/nginx-yum:staging
+    restart: on-failure
+    environment:
+      - VIRTUAL_HOST=ricardopcazal.xyz
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./docker/nginx/certs:/etc/nginx/certs
+      - ./docker/nginx/html:/usr/share/nginx/html
+      - ./docker/nginx/vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    depends_on:
+      - app
+  nginx-proxy-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    environment:
+      - DEFAULT_EMAIL=ricardopcazal@gmail.com
+      - NGINX_PROXY_CONTAINER=yumdelivery_nginx-proxy_1
+      - NGINX_DOCKER_GEN_CONTAINER=yumdelivery_nginx-proxy_1
+      - LETSENCRYPT_HOST=ricardopcazal.xyz
+      - VIRTUAL_HOST=ricardopcazal.xyz
+      - VIRTUAL_PORT=8000
+    volumes:
+      - ./docker/nginx/certs:/etc/nginx/certs
+      - ./docker/nginx/html:/usr/share/nginx/html
+      - ./docker/nginx/vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/nginx/acme:/etc/acme.sh
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  certs:
+  html:
+  vhost:
+  acme:
